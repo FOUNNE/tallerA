@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>PEDI FO-UNNE</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#08152B; --navy-800:#16305C; --navy-600:#254878;
+    --gold:#C9A227; --gold-hi:#F2CC55; --paper:#F5F2EA; --muted:#7E8CA8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(120% 70% at 50% 0%, var(--navy-800), var(--navy-950) 65%);
+    color:var(--paper);
+    font-family:'Archivo',system-ui,sans-serif;
+    display:flex;flex-direction:column;
+    padding:26px 22px calc(26px + env(safe-area-inset-bottom));
+    min-height:100dvh;
+  }
+  .marca{
+    font-family:'Archivo Narrow',sans-serif;font-weight:700;
+    letter-spacing:.24em;text-transform:uppercase;
+    font-size:12px;color:var(--gold);margin-bottom:auto;
+  }
+  h1{
+    font-family:'Archivo Narrow',sans-serif;font-weight:700;
+    font-size:clamp(27px,7.4vw,38px);line-height:1.12;
+    margin:30px 0 24px;text-wrap:balance;
+  }
+  input{
+    width:100%;
+    background:rgba(255,255,255,.05);
+    border:2px solid var(--navy-600);
+    border-radius:12px;
+    color:var(--paper);
+    font-family:'Archivo',sans-serif;
+    font-size:40px;font-weight:800;
+    text-align:center;
+    padding:20px 14px;
+    outline:none;
+  }
+  input:focus{border-color:var(--gold-hi)}
+  input::placeholder{color:var(--muted);font-weight:400;font-size:24px}
+  .pista{
+    text-align:center;color:var(--muted);
+    font-size:14px;margin-top:12px;min-height:20px;
+  }
+  button{
+    width:100%;margin-top:20px;
+    background:var(--gold);color:var(--navy-950);
+    border:none;border-radius:12px;
+    font-family:'Archivo',sans-serif;font-size:19px;font-weight:800;
+    padding:20px;cursor:pointer;
+  }
+  button:disabled{opacity:.45}
+  .pie{margin-top:auto;padding-top:28px;text-align:center;color:var(--muted);font-size:13px;min-height:22px}
+  .listo{text-align:center;margin:auto 0}
+  .listo .tick{
+    width:78px;height:78px;border-radius:50%;
+    border:4px solid var(--gold-hi);color:var(--gold-hi);
+    display:flex;align-items:center;justify-content:center;
+    font-size:40px;margin:0 auto 22px;
+  }
+  .listo p{font-size:19px;line-height:1.45}
+  .listo b{color:var(--gold-hi);font-size:34px;display:block;margin-bottom:8px}
+  .oculto{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="marca">Plan Estratégico · FO-UNNE</div>
+
+<div id="vista">
+  <h1 id="pregunta">Conectando…</h1>
+  <input id="valor" type="text" inputmode="decimal" placeholder="Tu estimación" disabled>
+  <div class="pista" id="pista"></div>
+  <button id="enviar" disabled>Enviar</button>
+</div>
+
+<div id="gracias" class="listo oculto">
+  <div class="tick">✓</div>
+  <p><b id="tuValor"></b>Registrado. Mirá la pantalla.</p>
+</div>
+
+<div class="pie" id="pie"></div>
+
+<script>
+/* ---------- configuración ---------- */
+const API = 'https://script.google.com/macros/s/AKfycbyerj3lvcoxl8ZSTmT_OvCKyhsNFeEBMkFLvB1FfNYtZy1oMZcBC3itkpT8v3kttqtR/exec';
+
+const PREGUNTAS = [
+  { q:"¿Cuántas carreras de Odontología hay en el país?",              pista:"Un número entero",        min:0,   max:200 },
+  { q:"¿Cuántos odontólogos cada 10.000 habitantes hay en Argentina?", pista:"Puede tener decimales",   min:0,   max:100 },
+  { q:"¿En qué año se fundó la Facultad de Odontología de la UNNE?",   pista:"Un año de cuatro cifras", min:1900,max:2026 },
+  { q:"¿Cuántos estudiantes hay hoy en la FO-UNNE?",                   pista:"Un número entero",        min:0,   max:20000 },
+  { q:"¿Cuál es la duración promedio real de la carrera?",             pista:"En años",                 min:0,   max:30 }
+];
+
+/* ---------- identidad del dispositivo ---------- */
+let yo = localStorage.getItem('pedi_id');
+if(!yo){
+  yo = 'd' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  localStorage.setItem('pedi_id', yo);
+}
+
+/* ---------- estado ---------- */
+let actual = -1, abierta = 0, enviando = false;
+const $ = id => document.getElementById(id);
+const votadas = new Set(JSON.parse(localStorage.getItem('pedi_votadas') || '[]'));
+
+function recordar(q){
+  votadas.add(q);
+  localStorage.setItem('pedi_votadas', JSON.stringify([...votadas]));
+}
+
+/* ---------- vista ---------- */
+function pintar(){
+  const p = PREGUNTAS[actual];
+  if(!p){ $('pregunta').textContent = 'Esperando…'; return; }
+
+  if(votadas.has(actual)){
+    $('vista').classList.add('oculto');
+    $('gracias').classList.remove('oculto');
+    $('pie').textContent = 'Pregunta ' + (actual + 1) + ' de ' + PREGUNTAS.length;
+    return;
+  }
+
+  $('gracias').classList.add('oculto');
+  $('vista').classList.remove('oculto');
+  $('pregunta').textContent = p.q;
+  $('pista').textContent = abierta ? p.pista : 'La votación está cerrada';
+  $('valor').disabled = !abierta;
+  $('enviar').disabled = !abierta;
+  $('pie').textContent = 'Pregunta ' + (actual + 1) + ' de ' + PREGUNTAS.length;
+}
+
+/* ---------- sondeo de estado ---------- */
+async function sondear(){
+  try{
+    const r = await fetch(API + '?accion=estado&t=' + Date.now());
+    const d = await r.json();
+    if(!d.ok) return;
+    const q = Number(d.estado.pregunta);
+    if(q !== actual){ actual = q; $('valor').value = ''; }
+    abierta = Number(d.estado.abierta);
+    pintar();
+  }catch(e){ /* reintenta en el próximo ciclo */ }
+}
+
+/* ---------- envío con reintentos y jitter ----------
+   El jitter es lo que evita que 200 celulares reintenten
+   sincronizados y vuelvan a saturar el script.
+------------------------------------------------------------------- */
+async function enviar(){
+  if(enviando) return;
+  const p = PREGUNTAS[actual];
+  const bruto = $('valor').value.replace(',', '.').trim();
+  const v = parseFloat(bruto);
+
+  if(!isFinite(v) || v < p.min || v > p.max){
+    $('pista').textContent = 'Poné un número entre ' + p.min + ' y ' + p.max;
+    return;
+  }
+
+  enviando = true;
+  $('enviar').disabled = true;
+  $('enviar').textContent = 'Enviando…';
+
+  for(let intento = 0; intento < 4; intento++){
+    try{
+      const r = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ dispositivo: yo, pregunta: actual, valor: v })
+      });
+      const d = await r.json();
+
+      if(d.ok){
+        recordar(actual);
+        $('tuValor').textContent = bruto;
+        enviando = false;
+        $('enviar').textContent = 'Enviar';
+        pintar();
+        return;
+      }
+      if(!d.reintentar){
+        $('pista').textContent = d.error === 'cerrada'
+          ? 'La votación se cerró'
+          : 'No se pudo registrar';
+        break;
+      }
+    }catch(e){ /* red caída: reintenta */ }
+
+    /* espera creciente + jitter */
+    await new Promise(r => setTimeout(r, 600 * Math.pow(2, intento) + Math.random() * 900));
+  }
+
+  enviando = false;
+  $('enviar').disabled = false;
+  $('enviar').textContent = 'Reintentar';
+  if($('pista').textContent === '') $('pista').textContent = 'Sin respuesta, probá de nuevo';
+}
+
+$('enviar').onclick = enviar;
+$('valor').addEventListener('keydown', e => { if(e.key === 'Enter') enviar(); });
+
+sondear();
+setInterval(sondear, 4000);
+</script>
+</body>
+</html>

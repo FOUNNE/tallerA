@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PEDI FO-UNNE — Pantalla</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#08152B;
+    --navy-900:#0E1F3D;
+    --navy-800:#16305C;
+    --navy-600:#254878;
+    --gold:#C9A227;
+    --gold-hi:#F2CC55;
+    --paper:#F5F2EA;
+    --muted:#7E8CA8;
+    --bar:#3D6BA8;
+    --bar-near:#5D8FD6;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  html,body{height:100%}
+
+  body{
+    background:
+      radial-gradient(120% 80% at 50% -10%, var(--navy-800) 0%, var(--navy-950) 62%);
+    color:var(--paper);
+    font-family:'Archivo', ui-sans-serif, system-ui, sans-serif;
+    font-variant-numeric:tabular-nums;
+    overflow:hidden;
+  }
+
+  .screen{
+    height:100vh;
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    padding:3.2vh 3.4vw;
+    gap:2.4vh;
+  }
+
+  /* ---------- encabezado ---------- */
+  header{display:flex;align-items:flex-start;justify-content:space-between;gap:3vw}
+
+  .eyebrow{
+    font-family:'Archivo Narrow', 'Archivo', sans-serif;
+    font-weight:700;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    font-size:clamp(11px,1.15vw,17px);
+    color:var(--gold);
+    margin-bottom:1.1vh;
+  }
+
+  h1{
+    font-family:'Archivo Narrow','Archivo',sans-serif;
+    font-weight:700;
+    font-size:clamp(30px,4.15vw,68px);
+    line-height:1.03;
+    letter-spacing:-.015em;
+    max-width:20ch;
+    text-wrap:balance;
+  }
+
+  .counter{text-align:right;flex-shrink:0;padding-top:.4vh}
+  .counter b{
+    display:block;
+    font-size:clamp(34px,4.6vw,76px);
+    font-weight:800;
+    line-height:.9;
+    letter-spacing:-.03em;
+  }
+  .counter span{
+    font-family:'Archivo Narrow','Archivo',sans-serif;
+    font-size:clamp(11px,1.05vw,16px);
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .counter.pulse b{animation:pop .34s ease-out}
+  @keyframes pop{0%{transform:scale(1)}42%{transform:scale(1.11);color:var(--gold-hi)}100%{transform:scale(1)}}
+
+  /* ---------- histograma ---------- */
+  .plot{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:0}
+
+  .bars{
+    display:flex;
+    align-items:flex-end;
+    gap:.42%;
+    height:100%;
+    border-bottom:2px solid var(--navy-600);
+  }
+
+  .bar{
+    flex:1;
+    background:linear-gradient(180deg,var(--bar-near),var(--bar));
+    border-radius:5px 5px 0 0;
+    height:0;
+    min-height:0;
+    transition:height .5s cubic-bezier(.22,1,.36,1), background .6s ease, opacity .6s ease;
+    position:relative;
+  }
+  .bar.dim{opacity:.26}
+  .bar.hit{background:linear-gradient(180deg,var(--gold-hi),var(--gold))}
+
+  .custom{
+    position:absolute;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    transition:opacity .55s ease;
+  }
+  .custom.on{display:flex;opacity:1}
+  .custom svg{width:100%;height:100%}
+
+  .plot.hidebars .bars,
+  .plot.hidebars .axis,
+  .plot.hidebars .marker{opacity:0;transition:opacity .35s ease;pointer-events:none}
+
+  .axis{
+    display:flex;
+    justify-content:space-between;
+    margin-top:1.4vh;
+    font-family:'Archivo Narrow','Archivo',sans-serif;
+    font-size:clamp(12px,1.15vw,19px);
+    color:var(--muted);
+    letter-spacing:.04em;
+  }
+
+  /* ---------- marcador del dato real ---------- */
+  .marker{
+    position:absolute;
+    top:0;bottom:0;
+    width:0;
+    border-left:3px dashed var(--gold-hi);
+    opacity:0;
+    transform:scaleY(.4);
+    transform-origin:bottom;
+    transition:opacity .45s ease,transform .55s cubic-bezier(.22,1,.36,1);
+    pointer-events:none;
+  }
+  .marker.on{opacity:1;transform:scaleY(1)}
+
+  .marker-tag{
+    position:absolute;
+    top:-.2vh;
+    left:12px;
+    white-space:nowrap;
+    background:var(--gold-hi);
+    color:var(--navy-950);
+    font-family:'Archivo Narrow','Archivo',sans-serif;
+    font-weight:700;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-size:clamp(11px,1.05vw,16px);
+    padding:.5em .8em;
+    border-radius:3px;
+  }
+  .marker-tag.flip{left:auto;right:12px}
+
+  /* ---------- pie: revelación ---------- */
+  footer{min-height:13.5vh;display:flex;align-items:flex-end}
+
+  .reveal{
+    display:flex;
+    align-items:baseline;
+    gap:1.6vw;
+    opacity:0;
+    transform:translateY(14px);
+    transition:opacity .5s ease .15s, transform .5s cubic-bezier(.22,1,.36,1) .15s;
+  }
+  .reveal.on{opacity:1;transform:none}
+
+  .reveal .big{
+    font-size:clamp(52px,8vw,132px);
+    font-weight:800;
+    line-height:.85;
+    letter-spacing:-.04em;
+    color:var(--gold-hi);
+  }
+  .reveal .unit{
+    font-family:'Archivo Narrow','Archivo',sans-serif;
+    font-size:clamp(17px,2vw,34px);
+    font-weight:600;
+    color:var(--paper);
+  }
+  .reveal .note{
+    font-size:clamp(13px,1.25vw,21px);
+    color:var(--muted);
+    max-width:34ch;
+    line-height:1.35;
+    margin-left:auto;
+    text-align:right;
+  }
+  .reveal .note b{color:var(--paper);font-weight:600}
+
+  .pending{
+    font-family:'Archivo Narrow','Archivo',sans-serif;
+    font-size:clamp(15px,1.6vw,26px);
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--gold);
+    border:2px dashed var(--gold);
+    border-radius:4px;
+    padding:.7em 1.1em;
+  }
+
+  .waiting{
+    font-family:'Archivo Narrow','Archivo',sans-serif;
+    font-size:clamp(14px,1.45vw,24px);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .waiting.hide{display:none}
+
+  /* ---------- panel de control ---------- */
+  .panel{
+    position:fixed;
+    right:1.2vw;bottom:1.2vw;
+    background:rgba(8,21,43,.95);
+    border:1px solid var(--navy-600);
+    border-radius:8px;
+    padding:14px;
+    display:none;
+    gap:8px;
+    flex-direction:column;
+    width:230px;
+    box-shadow:0 12px 40px rgba(0,0,0,.5);
+  }
+  .panel.on{display:flex}
+  .panel h2{
+    font-family:'Archivo Narrow','Archivo',sans-serif;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;
+  }
+  .panel button{
+    font-family:'Archivo',sans-serif;
+    font-size:13px;font-weight:600;
+    background:var(--navy-800);
+    color:var(--paper);
+    border:1px solid var(--navy-600);
+    border-radius:5px;
+    padding:9px 11px;
+    cursor:pointer;
+    text-align:left;
+  }
+  .panel button:hover{background:var(--navy-600)}
+  .panel button.key{background:var(--gold);color:var(--navy-950);border-color:var(--gold)}
+  .panel button:focus-visible,.panel button:focus{outline:2px solid var(--gold-hi);outline-offset:2px}
+  .panel .hint{font-size:11px;color:var(--muted);line-height:1.5}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="screen">
+  <header>
+    <div>
+      <div class="eyebrow" id="eyebrow">Pregunta 1 de 5</div>
+      <h1 id="question">—</h1>
+    </div>
+    <div class="counter" id="counter">
+      <b id="count">0</b>
+      <span>respuestas</span>
+    </div>
+  </header>
+
+  <div class="plot" id="plot">
+    <div class="bars" id="bars"></div>
+    <div class="marker" id="marker"><div class="marker-tag" id="markerTag">Dato real</div></div>
+    <div class="custom" id="custom"></div>
+    <div class="axis"><span id="axisMin">—</span><span id="axisMax">—</span></div>
+  </div>
+
+  <footer>
+    <div class="waiting" id="waiting">Esperando respuestas…</div>
+    <div class="reveal" id="reveal">
+      <div>
+        <span class="big" id="revealBig">—</span>
+        <span class="unit" id="revealUnit"></span>
+      </div>
+      <div class="note" id="revealNote"></div>
+    </div>
+  </footer>
+</div>
+
+<div class="panel" id="panel">
+  <h2>Control</h2>
+  <button id="btnReveal" class="key">Mostrar el dato real</button>
+  <button id="btnNext">Siguiente pregunta</button>
+  <button id="btnPrev">Pregunta anterior</button>
+  <h2>Prueba de carga</h2>
+  <button id="btnFlood">Simular 200 respuestas</button>
+  <button id="btnDrip">Simular llegada gradual</button>
+  <button id="btnReset">Vaciar respuestas</button>
+  <p class="hint">C oculta este panel · → siguiente · R revela · F simula 200</p>
+</div>
+
+<script>
+/* ------------------------------------------------------------------
+   PREGUNTAS
+   answer: null  →  el dato todavía no está cargado.
+   No inventar valores: la pantalla marca el faltante de forma visible.
+------------------------------------------------------------------- */
+const PREGUNTAS = [
+  {
+    q: "¿Cuántas carreras de Odontología hay en el país?",
+    min: 0, max: 60, bins: 24, decimals: 0,
+    answer: 22,
+    unit: "carreras",
+    note: "En <b>13 ciudades</b>. La FO-UNNE es la única del NEA.",
+    guessCenter: 12, guessSpread: 9,
+    revealVisual: "mapa"
+  },
+  {
+    q: "¿Cuántos odontólogos cada 10.000 habitantes hay en Argentina?",
+    min: 0, max: 25, bins: 25, decimals: 1,
+    answer: 11.7,
+    unit: "cada 10.000 hab.",
+    note: "Quinto lugar del ranking. Casi el doble que Canadá o Australia.",
+    guessCenter: 5.5, guessSpread: 3.4,
+    revealVisual: "paises"
+  },
+  {
+    q: "¿En qué año se fundó la Facultad de Odontología de la UNNE?",
+    min: 1940, max: 2000, bins: 20, decimals: 0,
+    answer: 1973,
+    unit: "",
+    note: "Más de <b>medio siglo</b> formando odontólogos en el Nordeste.",
+    guessCenter: 1965, guessSpread: 11
+  },
+  {
+    q: "¿Cuántos estudiantes hay hoy en la FO-UNNE?",
+    min: 0, max: 4000, bins: 25, decimals: 0,
+    answer: 2295,
+    unit: "estudiantes",
+    note: "Creció <b>44%</b> hasta 2021, cayó tres años, y en 2025 volvió al pico.",
+    guessCenter: 1300, guessSpread: 800,
+    revealVisual: "matricula"
+  },
+  {
+    q: "¿Cuál es la duración promedio real de la carrera?",
+    min: 5, max: 12, bins: 21, decimals: 1,
+    answer: 7.9,
+    unit: "años",
+    note: "Contra un plan de estudios de <b>5 años</b>.",
+    guessCenter: 6.2, guessSpread: 1.1
+  }
+];
+
+/* ------------------------------------------------------------------
+   DATOS DE LAS VISUALIZACIONES
+------------------------------------------------------------------- */
+
+/* OMS, indicador ODS 3.c.1 — odontólogos cada 10.000 habitantes.
+   Últimos datos disponibles por país. */
+const PAISES = [
+  ["Brasil", 21.0], ["Cuba", 18.4], ["Colombia", 16.5], ["Chile", 13.8],
+  ["Argentina", 11.7], ["Uruguay", 11.7], ["Portugal", 10.9], ["Costa Rica", 10.6],
+  ["Alemania", 8.5], ["España", 8.2], ["Japón", 7.9], ["Canadá", 6.5],
+  ["Australia", 6.1], ["Estados Unidos", 6.0], ["Reino Unido", 5.3],
+  ["Perú", 2.0], ["México", 1.3]
+];
+
+/* 22 carreras en 13 ciudades. [ciudad, lat, lon, cantidad] */
+const CIUDADES = [
+  ["S. M. de Tucumán", -26.82, -65.22, 1],
+  ["Posadas",          -27.37, -55.90, 1],
+  ["Corrientes",       -27.47, -58.83, 1],
+  ["La Rioja",         -29.41, -66.85, 1],
+  ["Córdoba",          -31.42, -64.18, 2],
+  ["Libertador S. Martín", -31.81, -60.03, 1],
+  ["Mendoza",          -32.89, -68.84, 2],
+  ["Rosario",          -32.95, -60.65, 2],
+  ["CABA",             -34.60, -58.38, 6],
+  ["Merlo",            -34.67, -58.73, 1],
+  ["La Plata",         -34.92, -57.95, 2],
+  ["Mar del Plata",    -38.00, -57.55, 1],
+  ["Allen",            -38.98, -67.83, 1]
+];
+
+/* Contorno aproximado de Argentina, [lon, lat] */
+const CONTORNO = [
+  [-66.3,-22.0],[-64.5,-22.2],[-62.8,-22.0],[-61.0,-23.8],[-59.0,-24.5],
+  [-58.2,-24.9],[-57.6,-25.6],[-54.6,-25.6],[-53.6,-26.2],[-55.0,-27.3],
+  [-56.0,-27.5],[-57.6,-30.2],[-58.0,-32.0],[-58.4,-33.9],[-57.5,-35.0],
+  [-56.7,-36.4],[-57.5,-38.0],[-62.0,-39.0],[-62.3,-40.9],[-65.0,-42.5],
+  [-64.3,-45.0],[-65.7,-47.0],[-67.6,-49.3],[-68.3,-52.3],[-69.4,-52.2],
+  [-70.6,-52.7],[-72.3,-51.6],[-72.3,-50.6],[-73.5,-49.8],[-72.6,-48.4],
+  [-72.1,-46.6],[-71.7,-44.8],[-71.9,-43.6],[-71.5,-42.1],[-71.7,-40.3],
+  [-70.9,-38.6],[-70.4,-37.2],[-69.9,-35.5],[-69.9,-34.0],[-70.1,-32.5],
+  [-69.8,-30.8],[-70.5,-29.6],[-69.4,-27.8],[-68.4,-26.4],[-68.4,-24.8],
+  [-67.2,-23.9],[-66.9,-22.6]
+];
+
+/* Tierra del Fuego, polígono aparte */
+const TDF = [
+  [-68.6,-52.65],[-68.1,-53.4],[-66.8,-54.2],[-65.2,-54.6],
+  [-66.5,-55.0],[-68.6,-54.9]
+];
+
+
+/* ------------------------------------------------------------------
+   VISUALIZACIONES DE REVELACIÓN
+------------------------------------------------------------------- */
+
+function svgPaises(){
+  const W = 1180, H = 620;
+  const izq = 250, der = 60, arriba = 58, abajo = 62;
+  const ancho = W - izq - der;
+  const maxV = 25;
+  const filas = PAISES.length;
+  const paso = (H - arriba - abajo) / filas;
+  const alto = paso * 0.68;
+  const esc = v => v / maxV * ancho;
+
+  let out = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  out += `<text x="10" y="26" fill="var(--gold)" font-family="Archivo Narrow,sans-serif"
+            font-weight="700" font-size="21" letter-spacing="3">ODONTÓLOGOS CADA 10.000 HABITANTES</text>`;
+
+  /* grilla vertical */
+  for(let v = 0; v <= maxV; v += 5){
+    const x = izq + esc(v);
+    out += `<line x1="${x}" y1="${arriba - 12}" x2="${x}" y2="${H - abajo + 6}"
+              stroke="var(--navy-600)" stroke-width="1"/>`;
+    out += `<text x="${x}" y="${H - abajo + 34}" fill="var(--muted)" text-anchor="middle"
+              font-family="Archivo Narrow,sans-serif" font-size="22">${v}</text>`;
+  }
+
+  PAISES.forEach((d, i) => {
+    const [nombre, valor] = d;
+    const arg = nombre === "Argentina";
+    const y = arriba + i * paso;
+    const w = esc(valor);
+    const col = arg ? "var(--gold-hi)" : "var(--bar)";
+
+    out += `<text x="${izq - 20}" y="${y + alto * 0.78}" text-anchor="end"
+              fill="${arg ? 'var(--gold-hi)' : 'var(--paper)'}"
+              font-family="Archivo,sans-serif" font-size="25"
+              font-weight="${arg ? 800 : 400}">${nombre}</text>`;
+    out += `<rect x="${izq}" y="${y}" width="${w}" height="${alto}" rx="3" fill="${col}"/>`;
+    out += `<text x="${izq + w + 14}" y="${y + alto * 0.78}"
+              fill="${arg ? 'var(--gold-hi)' : 'var(--muted)'}"
+              font-family="Archivo,sans-serif" font-size="24"
+              font-weight="${arg ? 800 : 600}">${valor.toLocaleString('es-AR',{minimumFractionDigits:1})}</text>`;
+  });
+
+  out += `<text x="10" y="${H - 8}" fill="var(--muted)" font-family="Archivo Narrow,sans-serif"
+            font-size="18">Fuente: OMS, indicador ODS 3.c.1. Últimos datos disponibles por país.</text>`;
+  return out + `</svg>`;
+}
+
+function svgMapa(){
+  const W = 1180, H = 620;
+  const k = Math.cos(38 * Math.PI / 180);
+  const lonMin = -73.6, latMax = -21.7, latMin = -55.1;
+  const escala = (H - 40) / (latMax - latMin);
+  const px = lon => (lon - lonMin) * k * escala + 46;
+  const py = lat => (latMax - lat) * escala + 20;
+
+  let out = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+
+  /* silueta */
+  const d = CONTORNO.map((c, i) => `${i ? 'L' : 'M'}${px(c[0]).toFixed(1)},${py(c[1]).toFixed(1)}`).join(' ') + ' Z';
+  out += `<path d="${d}" fill="var(--navy-800)" fill-opacity=".55"
+            stroke="var(--navy-600)" stroke-width="2" stroke-linejoin="round"/>`;
+  const t = TDF.map((c, i) => `${i ? 'L' : 'M'}${px(c[0]).toFixed(1)},${py(c[1]).toFixed(1)}`).join(' ') + ' Z';
+  out += `<path d="${t}" fill="var(--navy-800)" fill-opacity=".55"
+            stroke="var(--navy-600)" stroke-width="2" stroke-linejoin="round"/>`;
+
+  /* ciudades */
+  CIUDADES.forEach(([nombre, lat, lon, n]) => {
+    const unne = nombre === "Corrientes";
+    const r = 7 + n * 3.4;
+    const col = unne ? "var(--gold-hi)" : "var(--bar-near)";
+    if(unne){
+      out += `<circle cx="${px(lon)}" cy="${py(lat)}" r="${r + 13}" fill="var(--gold-hi)" fill-opacity=".18"/>`;
+    }
+    out += `<circle cx="${px(lon)}" cy="${py(lat)}" r="${r}" fill="${col}"
+              stroke="var(--navy-950)" stroke-width="2"/>`;
+  });
+
+  /* listado a la derecha */
+  const x0 = 470, y0 = 74, paso = 38;
+  out += `<text x="${x0}" y="${y0 - 32}" fill="var(--gold)" font-family="Archivo Narrow,sans-serif"
+            font-weight="700" font-size="21" letter-spacing="3">22 CARRERAS EN 13 CIUDADES</text>`;
+
+  CIUDADES.forEach(([nombre, lat, lon, n], i) => {
+    const unne = nombre === "Corrientes";
+    const y = y0 + i * paso;
+    out += `<circle cx="${x0 + 9}" cy="${y - 8}" r="7"
+              fill="${unne ? 'var(--gold-hi)' : 'var(--bar-near)'}"/>`;
+    out += `<text x="${x0 + 32}" y="${y}" fill="${unne ? 'var(--gold-hi)' : 'var(--paper)'}"
+              font-family="Archivo,sans-serif" font-size="25"
+              font-weight="${unne ? 800 : 400}">${nombre}${unne ? '  —  FO-UNNE' : ''}</text>`;
+    out += `<text x="${x0 + 655}" y="${y}" text-anchor="end"
+              fill="${unne ? 'var(--gold-hi)' : 'var(--muted)'}"
+              font-family="Archivo,sans-serif" font-size="25" font-weight="600">${n}</text>`;
+  });
+
+  return out + `</svg>`;
+}
+
+const VISUALES = { paises: svgPaises, mapa: svgMapa, matricula: svgMatricula };
+
+
+/* Estudiantes activos, FO-UNNE.
+   Fuente: portal de transparencia UNNE (DGPIU). El dato 2025 proviene de la
+   respuesta al ticket 4270.
+   Serie completa 2015-2025. */
+const MATRICULA = [
+  [2015, 1603], [2016, 1692], [2017, 1828], [2018, 1987], [2019, 2209],
+  [2020, 2179], [2021, 2304], [2022, 2252], [2023, 2054], [2024, 2016],
+  [2025, 2295]
+];
+
+function svgMatricula(){
+  const W = 1180, H = 620;
+  const izq = 96, der = 268, arriba = 66, abajo = 74;
+  const ancho = W - izq - der, alto = H - arriba - abajo;
+  const maxY = 2600;   /* eje desde 0: la caída se lee moderada, que es lo correcto */
+  const n = MATRICULA.length;
+  const px = i => izq + (ancho / (n - 1)) * i;
+  const py = v => arriba + alto - (v / maxY) * alto;
+
+  let out = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  out += `<text x="10" y="26" fill="var(--gold)" font-family="Archivo Narrow,sans-serif"
+            font-weight="700" font-size="21" letter-spacing="3">ESTUDIANTES POR AÑO</text>`;
+
+  /* grilla */
+  for(let v = 0; v <= maxY; v += 500){
+    const y = py(v);
+    out += `<line x1="${izq}" y1="${y}" x2="${W - der}" y2="${y}"
+              stroke="var(--navy-600)" stroke-width="1"/>`;
+    out += `<text x="${izq - 18}" y="${y + 8}" text-anchor="end" fill="var(--muted)"
+              font-family="Archivo Narrow,sans-serif" font-size="21">${v.toLocaleString('es-AR')}</text>`;
+  }
+
+  /* área */
+  const linea = MATRICULA.map((d, i) => `${i ? 'L' : 'M'}${px(i).toFixed(1)},${py(d[1]).toFixed(1)}`).join(' ');
+  out += `<path d="${linea} L${px(n-1).toFixed(1)},${py(0)} L${px(0)},${py(0)} Z"
+            fill="var(--bar)" fill-opacity=".38"/>`;
+  out += `<path d="${linea}" fill="none" stroke="var(--bar-near)" stroke-width="4"
+            stroke-linejoin="round" stroke-linecap="round"/>`;
+
+  /* puntos y años */
+  MATRICULA.forEach((d, i) => {
+    const ultimo = i === n - 1;
+    out += `<circle cx="${px(i)}" cy="${py(d[1])}" r="${ultimo ? 13 : 6}"
+              fill="${ultimo ? 'var(--gold-hi)' : 'var(--bar-near)'}"
+              stroke="var(--navy-950)" stroke-width="${ultimo ? 3 : 2}"/>`;
+    out += `<text x="${px(i)}" y="${H - abajo + 36}" text-anchor="middle"
+              fill="${ultimo ? 'var(--gold-hi)' : 'var(--muted)'}"
+              font-family="Archivo Narrow,sans-serif" font-size="22"
+              font-weight="${ultimo ? 700 : 400}">${d[0]}</text>`;
+  });
+
+  /* remate 2025 */
+  const uy = py(MATRICULA[n-1][1]);
+  out += `<line x1="${px(n-1)}" y1="${uy}" x2="${W - der + 34}" y2="${uy}"
+            stroke="var(--gold-hi)" stroke-width="2" stroke-dasharray="6 5"/>`;
+  out += `<text x="${W - der + 44}" y="${uy - 6}" fill="var(--gold-hi)"
+            font-family="Archivo,sans-serif" font-size="46" font-weight="800">2.295</text>`;
+  out += `<text x="${W - der + 44}" y="${uy + 22}" fill="var(--muted)"
+            font-family="Archivo Narrow,sans-serif" font-size="20" letter-spacing="2">EN 2025</text>`;
+
+  return out + `</svg>`;
+}
+
+/* ------------------------------------------------------------------
+   CONEXIÓN CON EL BACKEND
+   Con API vacío la pantalla queda en modo simulación (teclas F y D).
+   Con la URL del /exec cargada, sondea votos reales cada 3 s.
+------------------------------------------------------------------- */
+const API   = 'https://script.google.com/macros/s/AKfycbyerj3lvcoxl8ZSTmT_OvCKyhsNFeEBMkFLvB1FfNYtZy1oMZcBC3itkpT8v3kttqtR/exec';
+const _SIM  = new URLSearchParams(location.search).has('sim');  // ?sim = modo simulación
+const TOKEN = 'pedi-uhazcq13vwumlvy7ao';     // <-- mismo token que en Codigo.gs
+
+let sondeo = null;
+
+async function traer(){
+  try{
+    const r = await fetch(`${API}?accion=resultados&pregunta=${idx}&t=${Date.now()}`);
+    const d = await r.json();
+    if(!d.ok) return;
+    if(d.valores.length !== votos.length){
+      votos = d.valores;
+      pintar(); latir();
+    }
+  }catch(e){ /* reintenta en el próximo ciclo */ }
+}
+
+async function mandarControl(pregunta, abierta){
+  if(!API) return;
+  try{
+    await fetch(`${API}?accion=control&token=${encodeURIComponent(TOKEN)}` +
+                `&pregunta=${pregunta}&abierta=${abierta}&t=${Date.now()}`);
+  }catch(e){}
+}
+
+/* ---------- estado ---------- */
+let idx = 0;
+let votos = [];
+let revelado = false;
+let dripTimer = null;
+
+/* ---------- utilidades ---------- */
+const $ = id => document.getElementById(id);
+const P = () => PREGUNTAS[idx];
+
+const fmt = (n, d) => n.toLocaleString('es-AR', {
+  minimumFractionDigits: d, maximumFractionDigits: d
+});
+
+function binDe(valor){
+  const p = P();
+  const t = (valor - p.min) / (p.max - p.min);
+  return Math.max(0, Math.min(p.bins - 1, Math.floor(t * p.bins)));
+}
+
+/* ---------- render ---------- */
+function construirBarras(){
+  const p = P();
+  $('bars').innerHTML = '';
+  for(let i = 0; i < p.bins; i++){
+    const b = document.createElement('div');
+    b.className = 'bar';
+    $('bars').appendChild(b);
+  }
+  $('axisMin').textContent = fmt(p.min, p.decimals);
+  $('axisMax').textContent = fmt(p.max, p.decimals) + (p.unit ? ' ' + p.unit : '');
+}
+
+function pintar(){
+  const p = P();
+  const barras = [...document.querySelectorAll('.bar')];
+  const conteo = new Array(p.bins).fill(0);
+  votos.forEach(v => conteo[binDe(v)]++);
+  const pico = Math.max(1, ...conteo);
+
+  barras.forEach((b, i) => {
+    b.style.height = (conteo[i] / pico * 100) + '%';
+    b.style.minHeight = conteo[i] > 0 ? '5px' : '0';
+  });
+
+  $('count').textContent = votos.length;
+  $('waiting').classList.toggle('hide', votos.length > 0);
+  $('eyebrow').textContent = `Pregunta ${idx + 1} de ${PREGUNTAS.length}`;
+  $('question').textContent = p.q;
+}
+
+function latir(){
+  const c = $('counter');
+  c.classList.remove('pulse');
+  void c.offsetWidth;
+  c.classList.add('pulse');
+}
+
+/* ---------- revelación ---------- */
+function revelar(){
+  const p = P();
+  revelado = true;
+  if(API && !_SIM){ mandarControl(idx, 0); clearInterval(sondeo); }
+  const rev = $('reveal');
+
+  if(p.answer === null){
+    $('revealBig').textContent = '';
+    $('revealUnit').innerHTML = '<span class="pending">Falta cargar el dato</span>';
+    $('revealNote').innerHTML = p.note;
+    rev.classList.add('on');
+    return;
+  }
+
+  /* marcador sobre el histograma */
+  const t = (p.answer - p.min) / (p.max - p.min);
+  const m = $('marker');
+  m.style.left = `calc(${(t * 100).toFixed(2)}% )`;
+  $('markerTag').classList.toggle('flip', t > 0.78);
+  $('markerTag').textContent = fmt(p.answer, p.decimals) + (p.unit ? ' ' + p.unit : '');
+  m.classList.add('on');
+
+  /* atenuar todo menos el bin correcto */
+  const acertado = binDe(p.answer);
+  document.querySelectorAll('.bar').forEach((b, i) => {
+    b.classList.add('dim');
+    if(i === acertado){ b.classList.remove('dim'); b.classList.add('hit'); }
+  });
+
+  $('revealBig').textContent = fmt(p.answer, p.decimals);
+  $('revealUnit').textContent = p.unit;
+
+  /* cuánto se acercó el aula */
+  let extra = '';
+  if(votos.length){
+    const mediana = [...votos].sort((a, b) => a - b)[Math.floor(votos.length / 2)];
+    const dir = mediana < p.answer ? 'subestimó' : 'sobrestimó';
+    extra = ` El aula ${dir}: mediana de ${fmt(mediana, p.decimals)}.`;
+  }
+  $('revealNote').innerHTML = p.note + extra;
+  rev.classList.add('on');
+
+  /* visualización personalizada, si la pregunta la tiene */
+  if(p.revealVisual && VISUALES[p.revealVisual]){
+    setTimeout(() => {
+      $('plot').classList.add('hidebars');
+      $('custom').innerHTML = VISUALES[p.revealVisual]();
+      $('custom').classList.add('on');
+    }, 1100);
+  }
+}
+
+/* ---------- navegación ---------- */
+function cargar(n){
+  clearInterval(dripTimer);
+  idx = (n + PREGUNTAS.length) % PREGUNTAS.length;
+  votos = [];
+  revelado = false;
+  $('marker').classList.remove('on');
+  $('reveal').classList.remove('on');
+  $('plot').classList.remove('hidebars');
+  $('custom').classList.remove('on');
+  $('custom').innerHTML = '';
+  $('revealUnit').textContent = '';
+  construirBarras();
+  pintar();
+
+  clearInterval(sondeo);
+  if(API && !_SIM){
+    mandarControl(idx, 1);
+    traer();
+    sondeo = setInterval(traer, 3000);
+  }
+}
+
+/* ---------- datos sintéticos ----------
+   Distribución log-normal sesgada + cola de outliers:
+   se parece bastante a cómo estima una sala real.
+------------------------------------------------------------------- */
+function guessSintetico(){
+  const p = P();
+  let v;
+  if(Math.random() < 0.08){
+    v = p.min + Math.random() * (p.max - p.min);       // outlier
+  }else{
+    const u1 = Math.random() || 1e-9, u2 = Math.random();
+    const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    v = p.guessCenter + z * p.guessSpread;
+  }
+  v = Math.max(p.min, Math.min(p.max, v));
+  const f = Math.pow(10, p.decimals);
+  return Math.round(v * f) / f;
+}
+
+function inundar(n){
+  clearInterval(dripTimer);
+  for(let i = 0; i < n; i++) votos.push(guessSintetico());
+  pintar(); latir();
+}
+
+function gotear(){
+  clearInterval(dripTimer);
+  votos = [];
+  pintar();
+  let restantes = 200;
+  dripTimer = setInterval(() => {
+    const lote = 1 + Math.floor(Math.random() * 6);
+    for(let i = 0; i < lote && restantes > 0; i++, restantes--) votos.push(guessSintetico());
+    pintar(); latir();
+    if(restantes <= 0) clearInterval(dripTimer);
+  }, 260);
+}
+
+/* ---------- controles ---------- */
+$('btnReveal').onclick = () => { if(!revelado) revelar(); };
+$('btnNext').onclick   = () => cargar(idx + 1);
+$('btnPrev').onclick   = () => cargar(idx - 1);
+$('btnFlood').onclick  = () => inundar(200);
+$('btnDrip').onclick   = gotear;
+$('btnReset').onclick  = () => { clearInterval(dripTimer); votos = []; pintar(); };
+
+document.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if(k === 'c') $('panel').classList.toggle('on');
+  if(k === 'arrowright') cargar(idx + 1);
+  if(k === 'arrowleft')  cargar(idx - 1);
+  if(k === 'r' && !revelado) revelar();
+  if(k === 'f') inundar(200);
+});
+
+/* arranque */
+cargar(0);
+$('panel').classList.add('on');
+</script>
+</body>
+</html>
