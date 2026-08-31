@@ -219,6 +219,50 @@
   }
   .waiting.hide{display:none}
 
+  /* ---------- portada con QR ---------- */
+  .portada{
+    position:fixed;inset:0;z-index:50;
+    background:radial-gradient(120% 80% at 50% -10%, var(--navy-800) 0%, var(--navy-950) 62%);
+    display:flex;align-items:center;justify-content:center;
+    gap:6vw;padding:4vh 5vw;
+    transition:opacity .5s ease;
+  }
+  .portada.fuera{opacity:0;pointer-events:none}
+  .portada .texto{max-width:34ch}
+  .portada .eyebrow{margin-bottom:1.6vh}
+  .portada h2{
+    font-family:'Archivo Narrow','Archivo',sans-serif;font-weight:700;
+    font-size:clamp(34px,4.6vw,76px);line-height:1.04;
+    letter-spacing:-.015em;margin-bottom:2.6vh;text-wrap:balance;
+  }
+  .portada .url{
+    display:inline-block;
+    font-family:'Archivo',sans-serif;font-weight:600;
+    font-size:clamp(17px,1.85vw,30px);
+    color:var(--gold-hi);
+    border:2px solid var(--gold);border-radius:6px;
+    padding:.55em .9em;margin-bottom:2.4vh;
+    word-break:break-all;
+  }
+  .portada .paso{
+    font-size:clamp(14px,1.35vw,23px);color:var(--muted);
+    line-height:1.65;
+  }
+  .portada .paso b{color:var(--paper);font-weight:600}
+  .qr{
+    background:var(--paper);
+    padding:2.2vh;border-radius:14px;
+    flex-shrink:0;
+    box-shadow:0 18px 60px rgba(0,0,0,.45);
+  }
+  .qr svg{display:block;width:min(42vh,34vw);height:min(42vh,34vw)}
+  .arranque{
+    position:absolute;bottom:3.5vh;left:0;right:0;text-align:center;
+    font-family:'Archivo Narrow','Archivo',sans-serif;
+    font-size:clamp(12px,1.1vw,17px);letter-spacing:.2em;
+    text-transform:uppercase;color:var(--muted);
+  }
+
   /* ---------- panel de control ---------- */
   .panel{
     position:fixed;
@@ -293,6 +337,20 @@
   </footer>
 </div>
 
+<div class="portada" id="portada">
+  <div class="texto">
+    <div class="eyebrow">Plan Estratégico · FO-UNNE</div>
+    <h2>Escaneá para participar</h2>
+    <div class="url">founne.github.io/tallerA/votar.html</div>
+    <p class="paso">
+      Abrí la cámara del celular y apuntá al código.<br>
+      Dejá esa pestaña abierta: <b>las preguntas van cambiando solas</b>.
+    </p>
+  </div>
+  <div class="qr"><svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><path d="M0 0h7v1h-7zM9 0h1v1h-1zM11 0h1v1h-1zM16 0h1v1h-1zM18 0h2v1h-2zM21 0h1v1h-1zM23 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM15 1h1v1h-1zM18 1h1v1h-1zM21 1h1v1h-1zM24 1h1v1h-1zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h5v1h-5zM14 2h3v1h-3zM19 2h1v1h-1zM21 2h3v1h-3zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h3v1h-3zM12 3h1v1h-1zM18 3h1v1h-1zM21 3h1v1h-1zM23 3h2v1h-2zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h1v1h-1zM14 4h4v1h-4zM20 4h3v1h-3zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h4v1h-4zM14 5h1v1h-1zM17 5h1v1h-1zM19 5h1v1h-1zM21 5h4v1h-4zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h1v1h-1zM11 7h2v1h-2zM14 7h1v1h-1zM16 7h1v1h-1zM18 7h6v1h-6zM0 8h1v1h-1zM2 8h5v1h-5zM9 8h1v1h-1zM13 8h2v1h-2zM17 8h1v1h-1zM19 8h1v1h-1zM23 8h2v1h-2zM26 8h5v1h-5zM2 9h1v1h-1zM8 9h2v1h-2zM12 9h3v1h-3zM16 9h5v1h-5zM23 9h1v1h-1zM26 9h2v1h-2zM29 9h4v1h-4zM0 10h2v1h-2zM3 10h6v1h-6zM10 10h1v1h-1zM13 10h3v1h-3zM17 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h3v1h-3zM28 10h1v1h-1zM30 10h2v1h-2zM0 11h2v1h-2zM3 11h1v1h-1zM5 11h1v1h-1zM7 11h1v1h-1zM10 11h1v1h-1zM13 11h1v1h-1zM15 11h4v1h-4zM20 11h1v1h-1zM23 11h1v1h-1zM26 11h1v1h-1zM28 11h5v1h-5zM0 12h2v1h-2zM3 12h1v1h-1zM6 12h1v1h-1zM8 12h1v1h-1zM10 12h2v1h-2zM14 12h1v1h-1zM16 12h1v1h-1zM20 12h6v1h-6zM27 12h3v1h-3zM31 12h2v1h-2zM1 13h3v1h-3zM7 13h2v1h-2zM10 13h3v1h-3zM15 13h1v1h-1zM17 13h2v1h-2zM24 13h1v1h-1zM26 13h2v1h-2zM29 13h4v1h-4zM2 14h1v1h-1zM4 14h3v1h-3zM8 14h1v1h-1zM11 14h1v1h-1zM13 14h1v1h-1zM15 14h2v1h-2zM18 14h1v1h-1zM20 14h1v1h-1zM22 14h1v1h-1zM24 14h5v1h-5zM31 14h1v1h-1zM0 15h1v1h-1zM5 15h1v1h-1zM9 15h1v1h-1zM12 15h4v1h-4zM21 15h1v1h-1zM25 15h3v1h-3zM29 15h2v1h-2zM1 16h6v1h-6zM11 16h1v1h-1zM15 16h1v1h-1zM17 16h1v1h-1zM20 16h1v1h-1zM22 16h4v1h-4zM27 16h2v1h-2zM32 16h1v1h-1zM0 17h1v1h-1zM3 17h3v1h-3zM7 17h1v1h-1zM9 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM16 17h1v1h-1zM18 17h4v1h-4zM23 17h1v1h-1zM26 17h2v1h-2zM29 17h2v1h-2zM32 17h1v1h-1zM1 18h1v1h-1zM3 18h1v1h-1zM6 18h2v1h-2zM9 18h4v1h-4zM15 18h2v1h-2zM18 18h1v1h-1zM21 18h1v1h-1zM26 18h3v1h-3zM30 18h1v1h-1zM0 19h1v1h-1zM2 19h1v1h-1zM8 19h1v1h-1zM10 19h1v1h-1zM13 19h1v1h-1zM15 19h1v1h-1zM21 19h2v1h-2zM27 19h5v1h-5zM2 20h7v1h-7zM13 20h1v1h-1zM15 20h1v1h-1zM18 20h2v1h-2zM21 20h1v1h-1zM24 20h2v1h-2zM28 20h2v1h-2zM0 21h3v1h-3zM5 21h1v1h-1zM9 21h1v1h-1zM12 21h1v1h-1zM14 21h4v1h-4zM20 21h4v1h-4zM25 21h2v1h-2zM29 21h1v1h-1zM32 21h1v1h-1zM0 22h1v1h-1zM3 22h2v1h-2zM6 22h3v1h-3zM11 22h1v1h-1zM17 22h1v1h-1zM19 22h1v1h-1zM22 22h1v1h-1zM25 22h1v1h-1zM29 22h1v1h-1zM31 22h1v1h-1zM0 23h1v1h-1zM2 23h2v1h-2zM12 23h1v1h-1zM14 23h1v1h-1zM16 23h1v1h-1zM19 23h4v1h-4zM26 23h2v1h-2zM29 23h4v1h-4zM0 24h1v1h-1zM2 24h1v1h-1zM4 24h3v1h-3zM9 24h1v1h-1zM12 24h2v1h-2zM17 24h3v1h-3zM22 24h8v1h-8zM32 24h1v1h-1zM8 25h1v1h-1zM10 25h1v1h-1zM12 25h3v1h-3zM16 25h5v1h-5zM23 25h2v1h-2zM28 25h1v1h-1zM30 25h1v1h-1zM0 26h7v1h-7zM11 26h5v1h-5zM17 26h1v1h-1zM22 26h3v1h-3zM26 26h1v1h-1zM28 26h1v1h-1zM30 26h2v1h-2zM0 27h1v1h-1zM6 27h1v1h-1zM8 27h3v1h-3zM13 27h1v1h-1zM15 27h4v1h-4zM20 27h1v1h-1zM23 27h2v1h-2zM28 27h3v1h-3zM32 27h1v1h-1zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM8 28h3v1h-3zM12 28h1v1h-1zM14 28h3v1h-3zM20 28h3v1h-3zM24 28h6v1h-6zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM8 29h2v1h-2zM13 29h3v1h-3zM17 29h2v1h-2zM23 29h1v1h-1zM25 29h1v1h-1zM28 29h3v1h-3zM32 29h1v1h-1zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM8 30h1v1h-1zM10 30h4v1h-4zM15 30h3v1h-3zM20 30h2v1h-2zM23 30h1v1h-1zM26 30h2v1h-2zM30 30h1v1h-1zM0 31h1v1h-1zM6 31h1v1h-1zM9 31h2v1h-2zM13 31h1v1h-1zM15 31h1v1h-1zM21 31h2v1h-2zM25 31h1v1h-1zM28 31h3v1h-3zM0 32h7v1h-7zM8 32h1v1h-1zM12 32h1v1h-1zM15 32h3v1h-3zM20 32h1v1h-1zM22 32h3v1h-3zM27 32h1v1h-1zM31 32h1v1h-1z" fill="#08152B"/></svg></div>
+  <div class="arranque">Enter para comenzar</div>
+</div>
+
 <div class="panel" id="panel">
   <h2>Control</h2>
   <button id="btnReveal" class="key">Mostrar el dato real</button>
@@ -302,7 +360,9 @@
   <button id="btnFlood">Simular 200 respuestas</button>
   <button id="btnDrip">Simular llegada gradual</button>
   <button id="btnReset">Vaciar respuestas</button>
-  <p class="hint">C oculta este panel · → siguiente · R revela · F simula 200</p>
+  <h2>Sala</h2>
+  <button id="btnQR">Mostrar el QR</button>
+  <p class="hint">C oculta este panel · Q muestra el QR · → siguiente · R revela · F simula 200</p>
 </div>
 
 <script>
@@ -780,6 +840,12 @@ function gotear(){
 }
 
 /* ---------- controles ---------- */
+function portada(ver){
+  $('portada').classList.toggle('fuera', !ver);
+}
+$('btnQR').onclick = () => portada(true);
+$('portada').onclick = () => portada(false);
+
 $('btnReveal').onclick = () => { if(!revelado) revelar(); };
 $('btnNext').onclick   = () => cargar(idx + 1);
 $('btnPrev').onclick   = () => cargar(idx - 1);
@@ -789,6 +855,8 @@ $('btnReset').onclick  = () => { clearInterval(dripTimer); votos = []; pintar();
 
 document.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
+  if(k === 'enter' || k === ' '){ portada(false); return; }
+  if(k === 'q'){ portada(true); return; }
   if(k === 'c') $('panel').classList.toggle('on');
   if(k === 'arrowright') cargar(idx + 1);
   if(k === 'arrowleft')  cargar(idx - 1);
